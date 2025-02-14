@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "828849841331",
+    "project_id": "lostdevicerecoveryapp",
+    "storage_bucket": "lostdevicerecoveryapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828849841331:android:ffbc4a7eb9f30174443cc6",
+        "android_client_info": {
+          "package_name": "com.example.lostdevicerecoveryapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzvxQN9cCzuZmFcx6q1CFa4_1yZJJDQKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
