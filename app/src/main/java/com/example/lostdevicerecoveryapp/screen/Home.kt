@@ -26,12 +26,12 @@ fun Home(modifier: Modifier = Modifier ,navController: NavHostController) {
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF42A5F5), Color(0xFF1976D2))
+                    colors = listOf(Color(0xFF42A5F5), Color(0xFF0D47A1))
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        Card(
+        Card( // Card for the content
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .padding(24.dp)
