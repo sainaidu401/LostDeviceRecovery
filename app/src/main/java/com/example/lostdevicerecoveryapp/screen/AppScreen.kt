@@ -1,6 +1,15 @@
 package com.example.lostdevicerecoveryapp.screen
 
 import AuthViewModel
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,13 +20,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.lostdevicerecoveryapp.screen.BluetoothManager
 
 @Composable
 fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
+    val context = LocalContext.current
+    val activity = context as Activity
+
+    // Bluetooth Enable Launcher
+    val bluetoothEnableLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Bluetooth enabled successfully
+        }
+    }
+
+    // Bluetooth Permission Request
+    val bluetoothPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            bluetoothEnableLauncher.launch(Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE))
+        }
+    }
+
+    // Location Permission Request
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (allGranted) {
+            enableLocation(context)
+        }
+    }
 
     val authState = authViewModel.authState.observeAsState()
 
@@ -63,10 +106,21 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Lost Mobile Button
+                // Lost Mobile Button (Enables Bluetooth & Location)
                 Button(
                     onClick = {
-                        // TODO: Implement lost mobile logic
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                        } else {
+                            BluetoothManager.enableBluetooth(activity, bluetoothEnableLauncher)
+                        }
+
+                        locationPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -106,5 +160,15 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
                 }
             }
         }
+    }
+}
+
+// Function to check and enable location
+fun enableLocation(context: Context) {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        context.startActivity(intent)
     }
 }
