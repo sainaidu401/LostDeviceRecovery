@@ -33,6 +33,7 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
     val context = LocalContext.current
     val activity = context as Activity
     val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    var showDialog by remember { mutableStateOf(false) }
 
     // Bluetooth Enable Launcher
     val bluetoothEnableLauncher = rememberLauncherForActivityResult(
@@ -147,7 +148,7 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
                 // End Recovery Button
                 Button(
                     onClick = {
-                        // TODO: Implement stop tracking logic
+                        showDialog = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -156,6 +157,19 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                 ) {
                     Text(text = "End Recovery", fontSize = 18.sp, color = Color.White)
+                }
+
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        confirmButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("OK")
+                            }
+                        },
+                        title = { Text("Recovery Ended") },
+                        text = { Text("Your lost device recovery session has ended.") }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
