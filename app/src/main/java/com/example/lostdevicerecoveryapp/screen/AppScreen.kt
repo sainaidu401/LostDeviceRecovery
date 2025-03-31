@@ -3,9 +3,11 @@ package com.example.lostdevicerecoveryapp.screen
 import AuthViewModel
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,12 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.lostdevicerecoveryapp.screen.BluetoothManager
 
 @Composable
 fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
     val context = LocalContext.current
     val activity = context as Activity
+    val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
     // Bluetooth Enable Launcher
     val bluetoothEnableLauncher = rememberLauncherForActivityResult(
@@ -46,7 +48,8 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            bluetoothEnableLauncher.launch(Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            bluetoothEnableLauncher.launch(enableBtIntent)
         }
     }
 
@@ -106,21 +109,29 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Lost Mobile Button (Enables Bluetooth & Location)
+                // Lost Mobile Button (Enables Bluetooth, Wi-Fi & Location)
                 Button(
                     onClick = {
+                        // Enable Bluetooth
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             bluetoothPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
                         } else {
-                            BluetoothManager.enableBluetooth(activity, bluetoothEnableLauncher)
+                            if (bluetoothAdapter?.isEnabled == false) {
+                                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                                bluetoothEnableLauncher.launch(enableBtIntent)
+                            }
                         }
 
+                        // Enable Location
                         locationPermissionLauncher.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
                             )
                         )
+
+                        // Enable Wi-Fi
+                        enableWiFi(context)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,9 +177,21 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 // Function to check and enable location
 fun enableLocation(context: Context) {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
     if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
         val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        context.startActivity(intent)
+    }
+}
+
+// Function to enable Wi-Fi
+fun enableWiFi(context: Context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        if (!wifiManager.isWifiEnabled) {
+            wifiManager.isWifiEnabled = true
+        }
+    } else {
+        val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
         context.startActivity(intent)
     }
 }
