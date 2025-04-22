@@ -6,9 +6,11 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import android.location.LocationManager
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +36,7 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
     val activity = context as Activity
     val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     var showDialog by remember { mutableStateOf(false) }
+    var wakeLock: PowerManager.WakeLock? = null
 
     // Bluetooth Enable Launcher
     val bluetoothEnableLauncher = rememberLauncherForActivityResult(
@@ -133,6 +136,14 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
 
                         // Enable Wi-Fi
                         enableWiFi(context)
+
+                        // Prevent device from shutting down
+                        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+                        wakeLock = powerManager.newWakeLock(
+                            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                            "LostDeviceRecovery:WakeLock"
+                        )
+                        wakeLock?.acquire(10 * 60 * 1000L) // Prevent shutdown for 10 minutes
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -149,6 +160,7 @@ fun AppScreen(navController: NavHostController, authViewModel: AuthViewModel) {
                 Button(
                     onClick = {
                         showDialog = true
+                        wakeLock?.release() // Release WakeLock to allow shutdown
                     },
                     modifier = Modifier
                         .fillMaxWidth()
