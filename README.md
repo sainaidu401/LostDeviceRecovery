@@ -17,7 +17,6 @@ The **Lost Device Auto-Recovery System** is a mobile application designed to ass
   - Mobile Data
   - Wi-Fi
   - Bluetooth
-- 🗺️ Live device tracking via Google Maps API
 - 🔔 Real-time push notifications via Firebase Cloud Messaging (FCM)
 - 🔒 Prevent device shutdown (planned feature)
 - 🔧 Firebase Cloud Functions for backend triggers
@@ -30,7 +29,7 @@ The **Lost Device Auto-Recovery System** is a mobile application designed to ass
 |--------------|----------------------------------------------|
 | Frontend     | Android (Kotlin), Jetpack Components         |
 | Backend      | Firebase Firestore, Firebase Cloud Functions |
-| APIs         | Google Maps API, Firebase Cloud Messaging    |
+| APIs         | Firebase Cloud Messaging    |
 | IDE          | Android Studio                               |
 
 ---
